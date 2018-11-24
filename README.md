@@ -1,1 +1,0 @@
-# Othello-with-minmax-algorithm
