@@ -5,17 +5,18 @@
 #include <conio.h>
 
 #include <allegro.h>
-BITMAP *buffer, *cuadro, *fichaB, *fichaN, *cursor, *hover;
-FONT *font1;
+BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover;
+FONT *font1, *font2;
 
 using namespace std;
+int contBlancas, contNegras;
 #include "Mesa.h"
 pair<int, int> minimaxDecision(Mesa *b, int cpuval);
 int valorMax(Mesa *b, int cpuval, int alpha, int beta, int depth, int maxdepth, time_t start);
 int valorMin(Mesa *b, int cpuval, int alpha, int beta, int depth, int maxdepth, time_t start);
 
 void pantalla(){
-    blit(buffer, screen, 0, 0, 0,0, 700,480);
+    blit(buffer, screen, 0, 0, 0,0, 780,480);
 }
 
 bool hacerMovimientoSimpleCPU(Mesa *b, int cpuval) {
@@ -212,7 +213,25 @@ int valorMin(Mesa *b, int cpuval, int alpha, int beta, int profundidad, int max_
 	return maxval;
 }
 
-void play(int cpuval) {
+void imprimirAside(bool primero, bool noPermitido=false){
+    draw_sprite(buffer, aside, 480, 0);
+    if(contBlancas<10)textprintf_ex(buffer, font1, 670, 205, makecol(0,0,0), -1, "0%d", contBlancas);
+    else textprintf_ex(buffer, font1, 670, 205, makecol(0,0,0), -1, "%d", contBlancas);
+    if(contNegras<10)textprintf_ex(buffer, font1, 553, 205, makecol(0,0,0), -1, "0%d", contNegras);
+    else textprintf_ex(buffer, font1, 553, 205, makecol(0,0,0), -1, "%d", contNegras);
+
+    if(primero){
+       textout_ex(buffer, font1, "IA",  670, 55, makecol(0,0,0), -1);
+       textout_ex(buffer, font1, "Tu",553, 55, makecol(0,0,0), -1);
+	} else {
+       textout_ex(buffer, font1, "Tu", 670, 55, makecol(0,0,0), -1);
+       textout_ex(buffer, font1, "IA", 553, 55, makecol(0,0,0), -1);
+    }
+
+    if(noPermitido)  textout_ex(buffer, font2, "¡NO PERMITIDO!", 542, 360, makecol(255,0,0), -1);
+}
+
+void play(int cpuval, bool primero) {
 	Mesa *b = new Mesa();
 	int humanPlayer = -1*cpuval;
 	int cpuPlayer = cpuval;
@@ -222,67 +241,71 @@ void play(int cpuval) {
 	int pases = 0;
 
 	int row, col, auxrow, auxcol;
-	bool click;
+	bool click, auxPrimero=primero, noPermitido=false;
 
-	if (cpuPlayer == -1) { // cpu plays second
-        textout(buffer, font1, "se", 500, 0, makecol(255, 255, 255));
-        textout(buffer, font1, "prendio", 500, 30, makecol(255, 255, 255));
+	//if (cpuPlayer == -1) { // cpu plays second
 		while(!b->tableroLleno() && pases<2) {
 			//check if player must pass:
-			if(!b->tieneMovimientoValido(humanPlayer)) {
-				cout << "Tu debes pasar." << endl;
-				pases++;
-			}
-			else {
-				pases = 0;
-				//Click
-				click=false;
-
-				while(!click){
-                    if(mouse_b & 1){
-                        click=true;
-                        row=mouse_y/60;
-                        col=mouse_x/60;
-                    }
-                    auxrow=mouse_y/60;
-                    auxcol=mouse_x/60;
-
-                    b->imprimir(false);
-                    draw_sprite(buffer, hover, auxcol*60, auxrow*60);
-                    show_mouse(buffer);
-                    pantalla();
+			if(primero){
+                if(!b->tieneMovimientoValido(humanPlayer)) {
+                    cout << "Tu debes pasar." << endl;
+                    pases++;
                 }
-                //position_mouse(-50, -50);
-                pantalla();
+                else {
+                    pases = 0;
+                    //Click
+                    click=false;
 
-				if(!b->jugarTablero(row+1, col+1, humanPlayer)) {
-					cout << "Movimiento no permitido." << endl;
-					continue;
-				}
-				system("cls");
+                    while(!click){
+                        if(mouse_b & 1){
+                            click=true;
+                            row=mouse_y/60;
+                            col=mouse_x/60;
+                        }
+                        auxrow=mouse_y/60;
+                        auxcol=mouse_x/60;
+
+                        b->imprimir(false);
+                        if(mouse_x < 460)draw_sprite(buffer, hover, auxcol*60, auxrow*60);
+                        imprimirAside(auxPrimero, noPermitido);
+                        show_mouse(buffer);
+                        pantalla();
+                    }
+                    //position_mouse(-50, -50);
+                    pantalla();
+
+                    if(!b->jugarTablero(row+1, col+1, humanPlayer)) {
+                        cout << "Movimiento no permitido." << endl;
+                        noPermitido=true;
+                        continue;
+                    }
+                    noPermitido=false;
+                    system("cls");
+                }
 			}
 			//move for computer:
-			if(b->tableroLleno())
-				break;
-			else {
-				show_mouse(buffer);
-				b->imprimir();
-				pantalla();cout<< "..." << endl;
-				///ALLEGRO blit(buffer, screen, 0, 0, 0,0, 640,480);
-
-				/*if(hacerMovimientoSimpleCPU(b, cpuPlayer))
-					pases=0;*/
-				if(hacerMovimientoInteligenteCPU(b, cpuPlayer))
-					pases=0;
-				else
-					pases++;
+            if(b->tableroLleno())
+                break;
+            else {
                 show_mouse(buffer);
                 b->imprimir();
+                imprimirAside(auxPrimero);
+                pantalla();cout<< "..." << endl;
+
+                /*if(hacerMovimientoSimpleCPU(b, cpuPlayer))
+                    pases=0;*/
+                if(hacerMovimientoInteligenteCPU(b, cpuPlayer))
+                    pases=0;
+                else
+                    pases++;
+                show_mouse(buffer);
+                imprimirAside(auxPrimero);
+                b->imprimir();
                 pantalla();
-                //pantalla();
+                primero=true;
 			}
 		}
-	}
+	//}
 	/*** NO BORRAR, EN CONSTRUCCION ***/
 	/*else { // cpu juega primero
 		while(!b->tableroLleno() && pases<2) {
@@ -339,19 +362,21 @@ void play(int cpuval) {
 int main(){
     allegro_init();
     install_keyboard();
-    install_mouse(); show_mouse(NULL);
+    install_mouse();
 
     set_color_depth(32);
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 700,480,0,0);
+    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 780,480,0,0);
 
-    buffer = create_bitmap(700, 480);
-    fichaN = load_bitmap("Images/NegroT.bmp", NULL);
-    fichaB = load_bitmap("Images/BlancoT.bmp", NULL);
-    cuadro = load_bitmap("Images/Tablero23.bmp", NULL);
+    buffer = create_bitmap(780, 480);
+    aside = load_bitmap("Images/Aside.bmp", NULL);
+    fichaN = load_bitmap("Images/Negro.bmp", NULL);
+    fichaB = load_bitmap("Images/Blanco.bmp", NULL);
+    cuadro = load_bitmap("Images/Tablero2.bmp", NULL);
     cursor = load_bitmap("Images/cursor.bmp", NULL);
     hover = load_bitmap("Images/Hover32Bits.bmp", NULL);
 
     font1 = load_font("Fonts/lastninja.pcx", NULL, NULL);
+    font2 = load_font("Fonts/lastninja12.pcx", NULL, NULL);
 
     set_mouse_sprite(cursor);
 
@@ -361,10 +386,10 @@ int main(){
 	//cin >> a;
 
 	if (a == 'y' || a == 'Y') {
-		play(-1); // valor del cpu = -1
+        play(-1, true); // valor del cpu = -1
 	}
 	else
-		play(1);
+		play(1, false);
 	return 0;
 }
 

@@ -17,6 +17,7 @@ class Mesa {
 };
 
 void Mesa::imprimir(bool consola) {
+    contBlancas=contNegras=0;
 	char cforvalplusone[] = {'B', '_', 'N'};
 	if(consola)cout << "  1 2 3 4 5 6 7 8" << endl;
 	for(int i=0; i<8;i++) {
@@ -24,8 +25,12 @@ void Mesa::imprimir(bool consola) {
 		for(int j=0; j<8; j++){
             if(consola)cout << cforvalplusone[tablero[i][j]+1] << '|';
             draw_sprite(buffer, cuadro, j*60, i*60);
-            if(cforvalplusone[tablero[i][j]+1] == 'B') draw_sprite(buffer, fichaB, j*60, i*60);
-            else if(cforvalplusone[tablero[i][j]+1] == 'N') draw_sprite(buffer, fichaN, j*60, i*60);
+            if(cforvalplusone[tablero[i][j]+1] == 'B'){
+                draw_sprite(buffer, fichaB, j*60, i*60); contBlancas++;
+            }
+            else if(cforvalplusone[tablero[i][j]+1] == 'N'){
+                draw_sprite(buffer, fichaN, j*60, i*60); contNegras++;
+            }
             //else draw_sprite(buffer, cuadro, j*30, i*30);
 		}
 			//cout << cforvalplusone[tablero[i][j]+1] << '|';
