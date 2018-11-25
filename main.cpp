@@ -5,7 +5,7 @@
 #include <conio.h>
 
 #include <allegro.h>
-///ALLEGROBITMAP *buffer, *cuadro, *fichaB, *fichaN;
+BITMAP *buffer, *cuadro, *fichaB, *fichaN, *cursor;
 
 using namespace std;
 #include "Mesa.h"
@@ -14,7 +14,7 @@ int valorMax(Mesa *b, int cpuval, int alpha, int beta, int depth, int maxdepth, 
 int valorMin(Mesa *b, int cpuval, int alpha, int beta, int depth, int maxdepth, time_t start);
 
 void pantalla(){
-    ///ALLEGROblit(buffer, screen, 0, 0, 0,0, 640,480);
+    blit(buffer, screen, 0, 0, 0,0, 640,480);
 }
 
 bool hacerMovimientoSimpleCPU(Mesa *b, int cpuval) {
@@ -161,7 +161,7 @@ int valorMin(Mesa *b, int cpuval, int alpha, int beta, int profundidad, int max_
     // 2 formas de ser terminal: el juego ha terminado o ya no hay movimientos válidos (generalmente no es el caso hasta el final del juego)
     // o alcanzado el límite de profundidad
 
-    // adicionalmente, si se alcanza el límite de tiempo (20 s), simplemente vuelva a anotar
+    // adicionalmente, si se alcanza el límite de tiempo (5 s), simplemente vuelva a anotar
 
     // si el juego termina y la computadora gana, devuelve el número máximo posible (9000)
     // si el juego termina y el jugador gana, -9000
@@ -179,7 +179,7 @@ int valorMin(Mesa *b, int cpuval, int alpha, int beta, int profundidad, int max_
 	time_t now;
 	time(&now);
 	// Alcanzó el límite de profundidad, calificar el tablero según la función heurística.
-	if (profundidad == max_profundidad || difftime(now, start) >= 20)
+	if (profundidad == max_profundidad || difftime(now, start) >= 5)
 		return b->evaluar(cpuval, profundidad);
 
 	// Minimizar el valor máximo de los sucesores.
@@ -216,26 +216,38 @@ void play(int cpuval) {
 	int humanPlayer = -1*cpuval;
 	int cpuPlayer = cpuval;
 
-	b->imprimir();
-	///ALLEGRO blit(buffer, screen, 0, 0, 0,0, 640,480);
+	b->imprimir(); pantalla();
+
 	int pases = 0;
 
 	int row, col;
+	bool click;
 
 	if (cpuPlayer == -1) { // cpu plays second
 		while(!b->tableroLleno() && pases<2) {
 			//check if player must pass:
+			show_mouse(buffer);  b->imprimir(); pantalla();
 			if(!b->tieneMovimientoValido(humanPlayer)) {
 				cout << "Tu debes pasar." << endl;
 				pases++;
 			}
 			else {
 				pases = 0;
-				cout << "Fila (1-8): ";
-				cin >> row;
-				cout << "Columna (1-8): ";
-				cin >> col;
-				if(!b->jugarTablero(row, col, humanPlayer)) {
+				//Click
+				click=false;
+
+				while(!click){
+                    if(mouse_b & 1){
+                        click=true;
+                        row=mouse_y/60;
+                        col=mouse_x/60;
+                    }
+                    show_mouse(buffer);
+                    pantalla();
+                }
+                position_mouse(-50, -50);
+
+				if(!b->jugarTablero(row+1, col+1, humanPlayer)) {
 					cout << "Movimiento no permitido." << endl;
 					continue;
 				}
@@ -245,7 +257,9 @@ void play(int cpuval) {
 			if(b->tableroLleno())
 				break;
 			else {
-				b->imprimir(); cout<< "..." << endl;
+				show_mouse(buffer);
+				b->imprimir();
+				pantalla();cout<< "..." << endl;
 				///ALLEGRO blit(buffer, screen, 0, 0, 0,0, 640,480);
 
 				/*if(hacerMovimientoSimpleCPU(b, cpuPlayer))
@@ -255,7 +269,7 @@ void play(int cpuval) {
 				else
 					pases++;
                 b->imprimir();
-                ///ALLEGRO blit(buffer, screen, 0, 0, 0,0, 640,480);
+                //pantalla();
 			}
 		}
 	}
@@ -313,15 +327,20 @@ void play(int cpuval) {
 }
 
 int main(){
-    ///ALLEGROallegro_init();
-    ///ALLEGROinstall_keyboard();
-    ///ALLEGROset_color_depth(32);
-    ///ALLEGROset_gfx_mode(GFX_AUTODETECT_WINDOWED, 640,480,0,0);
+    allegro_init();
+    install_keyboard();
+    install_mouse(); show_mouse(NULL);
 
-    ///ALLEGRObuffer = create_bitmap(640, 480);
-    ///ALLEGROfichaN = load_bitmap("Comida.bmp", NULL);
-    ///ALLEGROfichaB = load_bitmap("enemigo.bmp", NULL);
-    ///ALLEGROcuadro = load_bitmap("roca.bmp", NULL);
+    set_color_depth(32);
+    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640,480,0,0);
+
+    buffer = create_bitmap(640, 480);
+    fichaN = load_bitmap("Images/NegroT.bmp", NULL);
+    fichaB = load_bitmap("Images/BlancoT.bmp", NULL);
+    cuadro = load_bitmap("Images/Tablero2.bmp", NULL);
+    cursor = load_bitmap("Images/cursor.bmp", NULL);
+
+    set_mouse_sprite(cursor);
 
 	//cout << "Presiona Y si quieres empezar primero." << endl;
 

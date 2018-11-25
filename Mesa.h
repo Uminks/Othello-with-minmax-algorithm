@@ -23,8 +23,9 @@ void Mesa::imprimir() {
 		cout << i+1 << '|';
 		for(int j=0; j<8; j++){
             cout << cforvalplusone[tablero[i][j]+1] << '|';
-            ///ALLEGRO if(cforvalplusone[tablero[i][j]+1] == 'B') draw_sprite(buffer, fichaB, j*30, i*30);
-            ///ALLEGRO else if(cforvalplusone[tablero[i][j]+1] == 'N') draw_sprite(buffer, fichaN, j*30, i*30);
+            draw_sprite(buffer, cuadro, j*60, i*60);
+            if(cforvalplusone[tablero[i][j]+1] == 'B') draw_sprite(buffer, fichaB, j*60, i*60);
+            else if(cforvalplusone[tablero[i][j]+1] == 'N') draw_sprite(buffer, fichaN, j*60, i*60);
             //else draw_sprite(buffer, cuadro, j*30, i*30);
 		}
 			//cout << cforvalplusone[tablero[i][j]+1] << '|';
