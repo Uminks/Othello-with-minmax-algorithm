@@ -337,7 +337,7 @@ int main(){
     buffer = create_bitmap(640, 480);
     fichaN = load_bitmap("Images/NegroT.bmp", NULL);
     fichaB = load_bitmap("Images/BlancoT.bmp", NULL);
-    cuadro = load_bitmap("Images/Tablero2.bmp", NULL);
+    cuadro = load_bitmap("Images/Wood.bmp", NULL);
     cursor = load_bitmap("Images/cursor.bmp", NULL);
 
     set_mouse_sprite(cursor);
