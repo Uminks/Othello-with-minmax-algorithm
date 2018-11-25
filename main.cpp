@@ -5,7 +5,8 @@
 #include <conio.h>
 
 #include <allegro.h>
-BITMAP *buffer, *cuadro, *fichaB, *fichaN, *cursor;
+BITMAP *buffer, *cuadro, *fichaB, *fichaN, *cursor, *hover;
+FONT *font1;
 
 using namespace std;
 #include "Mesa.h"
@@ -14,7 +15,7 @@ int valorMax(Mesa *b, int cpuval, int alpha, int beta, int depth, int maxdepth, 
 int valorMin(Mesa *b, int cpuval, int alpha, int beta, int depth, int maxdepth, time_t start);
 
 void pantalla(){
-    blit(buffer, screen, 0, 0, 0,0, 640,480);
+    blit(buffer, screen, 0, 0, 0,0, 700,480);
 }
 
 bool hacerMovimientoSimpleCPU(Mesa *b, int cpuval) {
@@ -220,13 +221,14 @@ void play(int cpuval) {
 
 	int pases = 0;
 
-	int row, col;
+	int row, col, auxrow, auxcol;
 	bool click;
 
 	if (cpuPlayer == -1) { // cpu plays second
+        textout(buffer, font1, "se", 500, 0, makecol(255, 255, 255));
+        textout(buffer, font1, "prendio", 500, 30, makecol(255, 255, 255));
 		while(!b->tableroLleno() && pases<2) {
 			//check if player must pass:
-			show_mouse(buffer);  b->imprimir(); pantalla();
 			if(!b->tieneMovimientoValido(humanPlayer)) {
 				cout << "Tu debes pasar." << endl;
 				pases++;
@@ -242,10 +244,16 @@ void play(int cpuval) {
                         row=mouse_y/60;
                         col=mouse_x/60;
                     }
+                    auxrow=mouse_y/60;
+                    auxcol=mouse_x/60;
+
+                    b->imprimir(false);
+                    draw_sprite(buffer, hover, auxcol*60, auxrow*60);
                     show_mouse(buffer);
                     pantalla();
                 }
-                position_mouse(-50, -50);
+                //position_mouse(-50, -50);
+                pantalla();
 
 				if(!b->jugarTablero(row+1, col+1, humanPlayer)) {
 					cout << "Movimiento no permitido." << endl;
@@ -268,7 +276,9 @@ void play(int cpuval) {
 					pases=0;
 				else
 					pases++;
+                show_mouse(buffer);
                 b->imprimir();
+                pantalla();
                 //pantalla();
 			}
 		}
@@ -322,7 +332,7 @@ void play(int cpuval) {
 		cout << "Player gana by "  << endl;
 	char a;
 	cin >> a;*/
-	getch();
+	//getch();
 	/**********************************/
 }
 
@@ -332,13 +342,16 @@ int main(){
     install_mouse(); show_mouse(NULL);
 
     set_color_depth(32);
-    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640,480,0,0);
+    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 700,480,0,0);
 
-    buffer = create_bitmap(640, 480);
+    buffer = create_bitmap(700, 480);
     fichaN = load_bitmap("Images/NegroT.bmp", NULL);
     fichaB = load_bitmap("Images/BlancoT.bmp", NULL);
-    cuadro = load_bitmap("Images/Wood.bmp", NULL);
+    cuadro = load_bitmap("Images/Tablero23.bmp", NULL);
     cursor = load_bitmap("Images/cursor.bmp", NULL);
+    hover = load_bitmap("Images/Hover32Bits.bmp", NULL);
+
+    font1 = load_font("Fonts/lastninja.pcx", NULL, NULL);
 
     set_mouse_sprite(cursor);
 

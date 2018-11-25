@@ -3,7 +3,7 @@ class Mesa {
         int tablero[8][8];
     public:
         Mesa();
-        void imprimir();
+        void imprimir(bool consola=true);
         bool jugarTablero(int, int, int);
         bool movimientoValido(int, int, int);
         bool comprobarVoltearFichas(int, int, int, int, int, bool);
@@ -16,20 +16,20 @@ class Mesa {
         int vecinosLibres(int, int);
 };
 
-void Mesa::imprimir() {
+void Mesa::imprimir(bool consola) {
 	char cforvalplusone[] = {'B', '_', 'N'};
-	cout << "  1 2 3 4 5 6 7 8" << endl;
+	if(consola)cout << "  1 2 3 4 5 6 7 8" << endl;
 	for(int i=0; i<8;i++) {
-		cout << i+1 << '|';
+		if(consola)cout << i+1 << '|';
 		for(int j=0; j<8; j++){
-            cout << cforvalplusone[tablero[i][j]+1] << '|';
+            if(consola)cout << cforvalplusone[tablero[i][j]+1] << '|';
             draw_sprite(buffer, cuadro, j*60, i*60);
             if(cforvalplusone[tablero[i][j]+1] == 'B') draw_sprite(buffer, fichaB, j*60, i*60);
             else if(cforvalplusone[tablero[i][j]+1] == 'N') draw_sprite(buffer, fichaN, j*60, i*60);
             //else draw_sprite(buffer, cuadro, j*30, i*30);
 		}
 			//cout << cforvalplusone[tablero[i][j]+1] << '|';
-		cout << endl;
+		if(consola)cout << endl;
 	}
 
 	///ALLEGRO draw_sprite(buffer, cuadro, 0, 0);
