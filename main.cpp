@@ -5,7 +5,7 @@
 #include <conio.h>
 
 #include <allegro.h>
-BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *turno, *menuBase, *menuPVIA, *menuPVP, *menuSalir;
+BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *exitButtonHover, *turno, *menuBase, *menuPVIA, *menuPVP, *menuSalir;
 FONT *font1, *font2;
 
 using namespace std;
@@ -238,7 +238,9 @@ void imprimirAside(bool primero, bool noPermitido=false, bool pvp=false, bool tu
     if(turnoS) draw_sprite(buffer, turno, 660, 250);
     else draw_sprite(buffer, turno, 543, 250);
 
-    draw_sprite
+
+    if(mouse_x>633 && mouse_x<753 && mouse_y>415 && mouse_y<455) draw_sprite(buffer, exitButtonHover, 633, 415);
+    else draw_sprite(buffer, exitButton, 633, 415);
 }
 
 //Primero=True -> Enpieza Jugador
@@ -274,6 +276,7 @@ void play(int cpuval, bool primero=true, bool pvp=false) {
                             click=true;
                             row=mouse_y/60;
                             col=mouse_x/60;
+                            if(mouse_x>633 && mouse_x<753 && mouse_y>415 && mouse_y<455) return;
                         }
                         auxrow=mouse_y/60;
                         auxcol=mouse_x/60;
@@ -341,6 +344,7 @@ void play(int cpuval, bool primero=true, bool pvp=false) {
                         if(mouse_b & 1){
                             row=mouse_y/60;
                             col=mouse_x/60;
+                            if(mouse_x>633 && mouse_x<753 && mouse_y>415 && mouse_y<455) return;
                             break;
                         }
                         auxrow=mouse_y/60;
@@ -415,6 +419,7 @@ void menu(){
                 break;
             }
         }
+        position_mouse(-1,-1);
         op=-2;
     }
 }
@@ -440,6 +445,7 @@ int main(){
     hover = load_bitmap("Images/Hover32Bits.bmp", NULL);
     turno = load_bitmap("Images/Flecha.bmp", NULL);
     exitButton = load_bitmap("Images/Exit.bmp", NULL);
+    exitButtonHover = load_bitmap("Images/ExitHover.bmp", NULL);
 
     font1 = load_font("Fonts/lastninja.pcx", NULL, NULL);
     font2 = load_font("Fonts/lastninja12.pcx", NULL, NULL);
