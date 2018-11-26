@@ -5,7 +5,8 @@
 #include <conio.h>
 
 #include <allegro.h>
-BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *exitButtonHover, *turno, *menuBase, *menuPVIA, *menuPVP, *menuSalir;
+BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *exitButtonHover, *turno;
+BITMAP *menuBase, *menuPVIA, *menuPVP, *menuSalir, *youlose, *youwin, *p1win, *p2win, *empate;
 FONT *font1, *font2;
 
 using namespace std;
@@ -295,10 +296,10 @@ void play(int cpuval, bool primero=true, bool pvp=false) {
                         continue;
                     }
                     noPermitido=false;
-                    if(turno==false) turno=true;
-                    else turno=false;
                     system("cls");
                 }
+                if(turno==false) turno=true;
+                else turno=false;
 			}
 
 			//Compruebo pvp
@@ -323,9 +324,9 @@ void play(int cpuval, bool primero=true, bool pvp=false) {
                     b->imprimir();
                     pantalla();
                     primero=true;
-                    if(turno==false) turno=true;
-                    else turno=false;
                 }
+                if(turno==false) turno=true;
+                else turno=false;
 			}
 			else{///OTRO JUGADOR
 
@@ -364,23 +365,40 @@ void play(int cpuval, bool primero=true, bool pvp=false) {
                         continue;
                     }
                     noPermitido2=false;
-                    if(turno==false) turno=true;
-                    else turno=false;
                     system("cls");
                 }
+                if(turno==false) turno=true;
+                else turno=false;
 			}
 		}
 	/*** NO BORRAR, EN CONSTRUCCION ***/
-	/*int score = b->score();
-	if(score==0)
-		cout << "Tie game." << endl;
-	else if((score>0 && (cpuval == 1)) || (score<0 && (cpuval == -1)))
-		cout << "Computadora gana by "  << endl;
-	else
-		cout << "Player gana by "  << endl;
-	char a;
-	cin >> a;*/
-	//getch();
+
+	position_mouse(-1,-1);
+	while(true){
+        if(mouse_b & 1){
+            if(mouse_x>633 && mouse_x<753 && mouse_y>415 && mouse_y<455)break;
+        }
+        b->imprimir(false);
+        imprimirAside(auxPrimero, false, pvp, turno);
+        if(pvp){
+           if(contBlancas<contNegras) draw_sprite(buffer, p1win, 215,140);
+           else if(contBlancas>contNegras) draw_sprite(buffer, p2win, 215, 140);
+           else  draw_sprite(buffer, empate, 215,140);
+        }
+        else{
+            if(auxPrimero){
+               if(contBlancas<contNegras) draw_sprite(buffer, youwin, 215,140);
+               else if(contBlancas>contNegras) draw_sprite(buffer, youlose, 215,140);
+               else draw_sprite(buffer, empate, 215,140);
+            }else{
+               if(contBlancas<contNegras) draw_sprite(buffer, youlose, 215,140);
+               else if(contBlancas>contNegras) draw_sprite(buffer, youwin, 215,140);
+               else draw_sprite(buffer, empate, 215,140);
+            }
+        }
+        show_mouse(buffer);
+        pantalla();
+    }
 	/**********************************/
 }
 
@@ -388,10 +406,10 @@ void menu(){
     int op=-2;
     while(true){
         while(op==-2){
-            if(mouse_x>232 && mouse_x<567 && mouse_y>193 && mouse_y<243) draw_sprite(buffer, menuPVP, 5,0);
-            else if(mouse_x>232 && mouse_x<567 && mouse_y>253 && mouse_y<300) draw_sprite(buffer, menuPVIA, 5,0);
-            else if(mouse_x>232 && mouse_x<567 && mouse_y>312 && mouse_y<357) draw_sprite(buffer, menuSalir, 5,0);
-            else draw_sprite(buffer, menuBase, 5,0);
+            if(mouse_x>232 && mouse_x<567 && mouse_y>193 && mouse_y<243) draw_sprite(buffer, menuPVP, 0,0);
+            else if(mouse_x>232 && mouse_x<567 && mouse_y>253 && mouse_y<300) draw_sprite(buffer, menuPVIA, 0,0);
+            else if(mouse_x>232 && mouse_x<567 && mouse_y>312 && mouse_y<357) draw_sprite(buffer, menuSalir, 0,0);
+            else draw_sprite(buffer, menuBase, 0,0);
             if(mouse_b & 1){
                 if(mouse_x>232 && mouse_x<567 && mouse_y>193 && mouse_y<243) op=1;
                 else if(mouse_x>232 && mouse_x<567 && mouse_y>253 && mouse_y<300) op=2;
@@ -419,8 +437,9 @@ void menu(){
                 break;
             }
         }
-        position_mouse(-1,-1);
         op=-2;
+        position_mouse(-1,-1);
+        clear(buffer);
     }
 }
 
@@ -437,6 +456,11 @@ int main(){
     menuPVIA = load_bitmap("Images/Menu-PVIA.bmp", NULL);
     menuPVP = load_bitmap("Images/Menu-PVP.bmp", NULL);
     menuSalir = load_bitmap("Images/Menu-salir.bmp", NULL);
+    youwin = load_bitmap("Images/YouWins.bmp", NULL);
+    youlose = load_bitmap("Images/YouLose.bmp", NULL);
+    p1win = load_bitmap("Images/Player1.bmp", NULL);
+    p2win = load_bitmap("Images/Player2.bmp", NULL);
+    empate = load_bitmap("Images/Draw.bmp", NULL);
     aside = load_bitmap("Images/Aside.bmp", NULL);
     fichaN = load_bitmap("Images/Negro.bmp", NULL);
     fichaB = load_bitmap("Images/Blanco.bmp", NULL);
