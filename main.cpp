@@ -5,7 +5,7 @@
 #include <conio.h>
 
 #include <allegro.h>
-BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton;
+BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *menuBase, *menuPVIA, *menuPVP, *menuSalir;
 FONT *font1, *font2;
 
 using namespace std;
@@ -297,7 +297,7 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
 			}
 
 			//Compruebo pvp
-			if(!pvp){//IA
+			if(!pvp){///IA
                 //Mueve Computadora
                 if(b->tableroLleno())
                     break;
@@ -320,7 +320,7 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
                     primero=true;
                 }
 			}
-			else{//OTRO JUGADOR
+			else{///OTRO JUGADOR
 
                 //Comprueba si el jugador pasa
 
@@ -374,6 +374,45 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
 	/**********************************/
 }
 
+void menu(){
+    int op=-2;
+    while(true){
+        while(op==-2){
+            if(mouse_x>232 && mouse_x<567 && mouse_y>193 && mouse_y<243) draw_sprite(buffer, menuPVP, 5,0);
+            else if(mouse_x>232 && mouse_x<567 && mouse_y>253 && mouse_y<300) draw_sprite(buffer, menuPVIA, 5,0);
+            else if(mouse_x>232 && mouse_x<567 && mouse_y>312 && mouse_y<357) draw_sprite(buffer, menuSalir, 5,0);
+            else draw_sprite(buffer, menuBase, 5,0);
+            if(mouse_b & 1){
+                if(mouse_x>232 && mouse_x<567 && mouse_y>193 && mouse_y<243) op=1;
+                else if(mouse_x>232 && mouse_x<567 && mouse_y>253 && mouse_y<300) op=2;
+                else if(mouse_x>232 && mouse_x<567 && mouse_y>312 && mouse_y<357) op=0;
+            }
+            show_mouse(buffer);
+            pantalla();
+        }
+
+        position_mouse(-1,-1);
+        mouse_b = 0;
+        switch(op){
+            case 1:{ ///PVP
+                clear(buffer);
+                play(-1, true, true);
+                break;
+            }
+            case 2:{
+                play(-1, true); // inicia jugador
+                //play(1, false); // inicia IA
+                break;
+            }
+            case 0:{
+                exit(1);
+                break;
+            }
+        }
+        op=-2;
+    }
+}
+
 int main(){
     allegro_init();
     install_keyboard();
@@ -383,6 +422,10 @@ int main(){
     set_gfx_mode(GFX_AUTODETECT_WINDOWED, 780,480,0,0);
 
     buffer = create_bitmap(780, 480);
+    menuBase = load_bitmap("Images/Menu-Base.bmp", NULL);
+    menuPVIA = load_bitmap("Images/Menu-PVIA.bmp", NULL);
+    menuPVP = load_bitmap("Images/Menu-PVP.bmp", NULL);
+    menuSalir = load_bitmap("Images/Menu-salir.bmp", NULL);
     aside = load_bitmap("Images/Aside.bmp", NULL);
     fichaN = load_bitmap("Images/Negro.bmp", NULL);
     fichaB = load_bitmap("Images/Blanco.bmp", NULL);
@@ -400,7 +443,7 @@ int main(){
 
 	char a='y';
 	//cin >> a;
-
+    menu();
 	if (a == 'y' || a == 'Y') {
         play(-1, true, true); //pvp
         //play(-1, true); // inicia jugador
