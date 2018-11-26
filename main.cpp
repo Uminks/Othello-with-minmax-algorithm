@@ -5,7 +5,7 @@
 #include <conio.h>
 
 #include <allegro.h>
-BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *menuBase, *menuPVIA, *menuPVP, *menuSalir;
+BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *turno, *menuBase, *menuPVIA, *menuPVP, *menuSalir;
 FONT *font1, *font2;
 
 using namespace std;
@@ -213,7 +213,7 @@ int valorMin(Mesa *b, int cpuval, int alpha, int beta, int profundidad, int max_
 	return maxval;
 }
 
-void imprimirAside(bool primero, bool noPermitido=false, bool pvp=false){
+void imprimirAside(bool primero, bool noPermitido=false, bool pvp=false, bool turnoS=false){
     draw_sprite(buffer, aside, 480, 0);
     if(contBlancas<10)textprintf_ex(buffer, font1, 670, 205, makecol(0,0,0), -1, "0%d", contBlancas);
     else textprintf_ex(buffer, font1, 670, 205, makecol(0,0,0), -1, "%d", contBlancas);
@@ -235,13 +235,16 @@ void imprimirAside(bool primero, bool noPermitido=false, bool pvp=false){
     }
 
     if(noPermitido)  textout_ex(buffer, font2, "¡NO PERMITIDO!", 542, 360, makecol(255,0,0), -1);
-    //draw_sprite(buffer, exitButton, 480, 0);
+    if(turnoS) draw_sprite(buffer, turno, 660, 250);
+    else draw_sprite(buffer, turno, 543, 250);
+
+    draw_sprite
 }
 
 //Primero=True -> Enpieza Jugador
 //Primero=false -> Empieza IA
 //pvp=true -> jugador vs jugador
-void play(int cpuval, bool primero=false, bool pvp=false) {
+void play(int cpuval, bool primero=true, bool pvp=false) {
 	Mesa *b = new Mesa();
 	int humanPlayer = -1*cpuval;
 	int cpuPlayer = cpuval;
@@ -251,7 +254,7 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
 	int pases = 0;
 
 	int row, col, auxrow, auxcol;
-	bool click, auxPrimero=primero, noPermitido=false,noPermitido2=false;
+	bool click, auxPrimero=primero, noPermitido=false,noPermitido2=false, turno=false;
 
 		while(!b->tableroLleno() && pases<2) {
 
@@ -277,21 +280,20 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
 
                         b->imprimir(false);
                         if(mouse_x < 460)draw_sprite(buffer, hover, auxcol*60, auxrow*60);
-                        if(pvp) imprimirAside(auxPrimero, false, pvp);
-                        else imprimirAside(auxPrimero, noPermitido, pvp);
+                        if(pvp) imprimirAside(auxPrimero, false, pvp, false);
+                        else imprimirAside(auxPrimero, noPermitido, pvp, turno);
                         show_mouse(buffer);
                         pantalla();
                     }
-
-                    click=false;
-                    pantalla();
-
+                    pantalla(); mouse_b=0;
                     if(!b->jugarTablero(row+1, col+1, humanPlayer)) {
                         //cout << "Movimiento no permitido." << endl;
                         noPermitido=true;
                         continue;
                     }
                     noPermitido=false;
+                    if(turno==false) turno=true;
+                    else turno=false;
                     system("cls");
                 }
 			}
@@ -304,7 +306,7 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
                 else {
                     show_mouse(buffer);
                     b->imprimir();
-                    imprimirAside(auxPrimero);
+                    imprimirAside(auxPrimero, false, false, turno);
                     pantalla();cout<< "..." << endl;
 
                     /*if(hacerMovimientoSimpleCPU(b, cpuPlayer))
@@ -314,10 +316,12 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
                     else
                         pases++;
                     show_mouse(buffer);
-                    imprimirAside(auxPrimero);
+                    imprimirAside(auxPrimero, false, false, turno);
                     b->imprimir();
                     pantalla();
                     primero=true;
+                    if(turno==false) turno=true;
+                    else turno=false;
                 }
 			}
 			else{///OTRO JUGADOR
@@ -330,9 +334,9 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
                 }
                 else {
                     pases = 0;
+
                     //Click
                     click=false;
-                    row=col=0;
                     while(true){
                         if(mouse_b & 1){
                             row=mouse_y/60;
@@ -344,11 +348,11 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
 
                         b->imprimir(false);
                         if(mouse_x < 460)draw_sprite(buffer, hover, auxcol*60, auxrow*60);
-                        imprimirAside(auxPrimero, false, pvp);
+                        imprimirAside(auxPrimero, false, pvp, turno);
                         show_mouse(buffer);
                         pantalla();
                     }
-                    pantalla();
+                    pantalla(); mouse_b=0;
 
                     if(!b->jugarTablero(row+1, col+1, cpuPlayer)) {
                         //cout << "Movimiento no permitido." << endl;
@@ -356,6 +360,8 @@ void play(int cpuval, bool primero=false, bool pvp=false) {
                         continue;
                     }
                     noPermitido2=false;
+                    if(turno==false) turno=true;
+                    else turno=false;
                     system("cls");
                 }
 			}
@@ -432,7 +438,8 @@ int main(){
     cuadro = load_bitmap("Images/Tablero2.bmp", NULL);
     cursor = load_bitmap("Images/cursor.bmp", NULL);
     hover = load_bitmap("Images/Hover32Bits.bmp", NULL);
-    exitButton = load_bitmap("Images/ExitHover.bmp", NULL);
+    turno = load_bitmap("Images/Flecha.bmp", NULL);
+    exitButton = load_bitmap("Images/Exit.bmp", NULL);
 
     font1 = load_font("Fonts/lastninja.pcx", NULL, NULL);
     font2 = load_font("Fonts/lastninja12.pcx", NULL, NULL);
