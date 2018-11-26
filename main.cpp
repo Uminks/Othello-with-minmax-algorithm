@@ -440,6 +440,7 @@ void menu(){
                     if(mouse_b & 1){
                         if(mouse_x>210 && mouse_x<298 && mouse_y>260 && mouse_y<348) ficha=1;
                         else if(mouse_x>505 && mouse_x<593 && mouse_y>260 && mouse_y<348) ficha=-1;
+                        if(ficha==0) continue;
                         break;
                     }
                     show_mouse(buffer);
