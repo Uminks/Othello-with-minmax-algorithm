@@ -6,8 +6,8 @@
 
 #include <allegro.h>
 BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton, *exitButtonHover, *turno;
-BITMAP *menuBase, *menuPVIA, *menuPVP, *menuSalir, *youlose, *youwin, *p1win, *p2win, *empate;
-FONT *font1, *font2;
+BITMAP *menuBase, *menu2Base, *menuPVIA, *menuPVP, *menuSalir, *menuNegro, *menuBlanco, *youlose, *youwin, *p1win, *p2win, *empate;
+FONT *font1, *font2, *font3;
 
 using namespace std;
 int contBlancas, contNegras;
@@ -236,8 +236,9 @@ void imprimirAside(bool primero, bool noPermitido=false, bool pvp=false, bool tu
     }
 
     if(noPermitido)  textout_ex(buffer, font2, "¡NO PERMITIDO!", 542, 360, makecol(255,0,0), -1);
-    if(turnoS) draw_sprite(buffer, turno, 660, 250);
-    else draw_sprite(buffer, turno, 543, 250);
+
+    if(turnoS) textout_ex(buffer, font3, "+", 667, 250, makecol(0,0,0), -1);//draw_sprite(buffer, turno, 660, 250);
+    else textout_ex(buffer, font3, "+", 550, 250, makecol(0,0,0), -1);//draw_sprite(buffer, turno, 543, 250);
 
 
     if(mouse_x>633 && mouse_x<753 && mouse_y>415 && mouse_y<455) draw_sprite(buffer, exitButtonHover, 633, 415);
@@ -271,7 +272,7 @@ void play(int cpuval, bool primero=true, bool pvp=false) {
                     pases = 0;
                     //Click
                     click=false;
-
+                    mouse_b=0;
                     while(!click){
                         if(mouse_b & 1){
                             click=true;
@@ -324,6 +325,7 @@ void play(int cpuval, bool primero=true, bool pvp=false) {
                     b->imprimir();
                     pantalla();
                     primero=true;
+                    position_mouse(-1,-1);
                 }
                 if(turno==false) turno=true;
                 else turno=false;
@@ -428,8 +430,26 @@ void menu(){
                 break;
             }
             case 2:{
-                play(-1, true); // inicia jugador
-                //play(1, false); // inicia IA
+                clear(buffer);
+                int ficha=0;
+                mouse_b = 0;
+                while(true){
+                    if(mouse_x>210 && mouse_x<298 && mouse_y>260 && mouse_y<348) draw_sprite(buffer, menuBlanco, 0,0);
+                    else if(mouse_x>505 && mouse_x<593 && mouse_y>260 && mouse_y<348) draw_sprite(buffer, menuNegro, 0,0);
+                    else draw_sprite(buffer, menu2Base, 0,0);
+                    if(mouse_b & 1){
+                        if(mouse_x>210 && mouse_x<298 && mouse_y>260 && mouse_y<348) ficha=1;
+                        else if(mouse_x>505 && mouse_x<593 && mouse_y>260 && mouse_y<348) ficha=-1;
+                        break;
+                    }
+                    show_mouse(buffer);
+                    pantalla();
+                }
+                mouse_b=0;
+                position_mouse(-1,-1);
+                if(ficha==-1)play(-1, true); // inicia jugador
+                else play(1, false); // inicia IA
+
                 break;
             }
             case 0:{
@@ -444,6 +464,7 @@ void menu(){
 }
 
 int main(){
+    system("mode con: cols=15 lines=15");
     allegro_init();
     install_keyboard();
     install_mouse();
@@ -456,6 +477,9 @@ int main(){
     menuPVIA = load_bitmap("Images/Menu-PVIA.bmp", NULL);
     menuPVP = load_bitmap("Images/Menu-PVP.bmp", NULL);
     menuSalir = load_bitmap("Images/Menu-salir.bmp", NULL);
+    menu2Base = load_bitmap("Images/Menu2-Base.bmp", NULL);
+    menuBlanco = load_bitmap("Images/Menu2-Blanco.bmp", NULL);
+    menuNegro = load_bitmap("Images/Menu2-Negro.bmp", NULL);
     youwin = load_bitmap("Images/YouWins.bmp", NULL);
     youlose = load_bitmap("Images/YouLose.bmp", NULL);
     p1win = load_bitmap("Images/Player1.bmp", NULL);
@@ -473,6 +497,7 @@ int main(){
 
     font1 = load_font("Fonts/lastninja.pcx", NULL, NULL);
     font2 = load_font("Fonts/lastninja12.pcx", NULL, NULL);
+    font3 = load_font("Fonts/lastninja36.pcx", NULL, NULL);
 
     set_mouse_sprite(cursor);
 

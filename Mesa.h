@@ -3,7 +3,7 @@ class Mesa {
         int tablero[8][8];
     public:
         Mesa();
-        void imprimir(bool consola=true);
+        void imprimir(bool consola=false);
         bool jugarTablero(int, int, int);
         bool movimientoValido(int, int, int);
         bool comprobarVoltearFichas(int, int, int, int, int, bool);
