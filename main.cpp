@@ -5,7 +5,7 @@
 #include <conio.h>
 
 #include <allegro.h>
-BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover;
+BITMAP *buffer, *aside, *cuadro, *fichaB, *fichaN, *cursor, *hover, *exitButton;
 FONT *font1, *font2;
 
 using namespace std;
@@ -213,25 +213,35 @@ int valorMin(Mesa *b, int cpuval, int alpha, int beta, int profundidad, int max_
 	return maxval;
 }
 
-void imprimirAside(bool primero, bool noPermitido=false){
+void imprimirAside(bool primero, bool noPermitido=false, bool pvp=false){
     draw_sprite(buffer, aside, 480, 0);
     if(contBlancas<10)textprintf_ex(buffer, font1, 670, 205, makecol(0,0,0), -1, "0%d", contBlancas);
     else textprintf_ex(buffer, font1, 670, 205, makecol(0,0,0), -1, "%d", contBlancas);
     if(contNegras<10)textprintf_ex(buffer, font1, 553, 205, makecol(0,0,0), -1, "0%d", contNegras);
     else textprintf_ex(buffer, font1, 553, 205, makecol(0,0,0), -1, "%d", contNegras);
 
-    if(primero){
-       textout_ex(buffer, font1, "IA",  670, 55, makecol(0,0,0), -1);
-       textout_ex(buffer, font1, "Tu",553, 55, makecol(0,0,0), -1);
-	} else {
-       textout_ex(buffer, font1, "Tu", 670, 55, makecol(0,0,0), -1);
-       textout_ex(buffer, font1, "IA", 553, 55, makecol(0,0,0), -1);
+    if(!pvp){
+        if(primero){
+           textout_ex(buffer, font1, "IA",  670, 55, makecol(0,0,0), -1);
+           textout_ex(buffer, font1, "Tu",553, 55, makecol(0,0,0), -1);
+        } else {
+           textout_ex(buffer, font1, "Tu", 670, 55, makecol(0,0,0), -1);
+           textout_ex(buffer, font1, "IA", 553, 55, makecol(0,0,0), -1);
+        }
+    }
+    else{
+        textout_ex(buffer, font1, "P2",  670, 55, makecol(0,0,0), -1);
+        textout_ex(buffer, font1, "P1",553, 55, makecol(0,0,0), -1);
     }
 
     if(noPermitido)  textout_ex(buffer, font2, "¡NO PERMITIDO!", 542, 360, makecol(255,0,0), -1);
+    //draw_sprite(buffer, exitButton, 480, 0);
 }
 
-void play(int cpuval, bool primero) {
+//Primero=True -> Enpieza Jugador
+//Primero=false -> Empieza IA
+//pvp=true -> jugador vs jugador
+void play(int cpuval, bool primero=false, bool pvp=false) {
 	Mesa *b = new Mesa();
 	int humanPlayer = -1*cpuval;
 	int cpuPlayer = cpuval;
@@ -241,12 +251,12 @@ void play(int cpuval, bool primero) {
 	int pases = 0;
 
 	int row, col, auxrow, auxcol;
-	bool click, auxPrimero=primero, noPermitido=false;
+	bool click, auxPrimero=primero, noPermitido=false,noPermitido2=false;
 
-	//if (cpuPlayer == -1) { // cpu plays second
 		while(!b->tableroLleno() && pases<2) {
-			//check if player must pass:
-			if(primero){
+
+			if(primero && !noPermitido2){
+                //Comprueba si el jugador pasa
                 if(!b->tieneMovimientoValido(humanPlayer)) {
                     cout << "Tu debes pasar." << endl;
                     pases++;
@@ -267,15 +277,17 @@ void play(int cpuval, bool primero) {
 
                         b->imprimir(false);
                         if(mouse_x < 460)draw_sprite(buffer, hover, auxcol*60, auxrow*60);
-                        imprimirAside(auxPrimero, noPermitido);
+                        if(pvp) imprimirAside(auxPrimero, false, pvp);
+                        else imprimirAside(auxPrimero, noPermitido, pvp);
                         show_mouse(buffer);
                         pantalla();
                     }
-                    //position_mouse(-50, -50);
+
+                    click=false;
                     pantalla();
 
                     if(!b->jugarTablero(row+1, col+1, humanPlayer)) {
-                        cout << "Movimiento no permitido." << endl;
+                        //cout << "Movimiento no permitido." << endl;
                         noPermitido=true;
                         continue;
                     }
@@ -283,69 +295,72 @@ void play(int cpuval, bool primero) {
                     system("cls");
                 }
 			}
-			//move for computer:
-            if(b->tableroLleno())
-                break;
-            else {
-                show_mouse(buffer);
-                b->imprimir();
-                imprimirAside(auxPrimero);
-                pantalla();cout<< "..." << endl;
 
-                /*if(hacerMovimientoSimpleCPU(b, cpuPlayer))
-                    pases=0;*/
-                if(hacerMovimientoInteligenteCPU(b, cpuPlayer))
-                    pases=0;
-                else
+			//Compruebo pvp
+			if(!pvp){//IA
+                //Mueve Computadora
+                if(b->tableroLleno())
+                    break;
+                else {
+                    show_mouse(buffer);
+                    b->imprimir();
+                    imprimirAside(auxPrimero);
+                    pantalla();cout<< "..." << endl;
+
+                    /*if(hacerMovimientoSimpleCPU(b, cpuPlayer))
+                        pases=0;*/
+                    if(hacerMovimientoInteligenteCPU(b, cpuPlayer))
+                        pases=0;
+                    else
+                        pases++;
+                    show_mouse(buffer);
+                    imprimirAside(auxPrimero);
+                    b->imprimir();
+                    pantalla();
+                    primero=true;
+                }
+			}
+			else{//OTRO JUGADOR
+
+                //Comprueba si el jugador pasa
+
+                if(!b->tieneMovimientoValido(cpuPlayer)) {
+                    cout << "Tu debes pasar." << endl;
                     pases++;
-                show_mouse(buffer);
-                imprimirAside(auxPrimero);
-                b->imprimir();
-                pantalla();
-                primero=true;
+                }
+                else {
+                    pases = 0;
+                    //Click
+                    click=false;
+                    row=col=0;
+                    while(true){
+                        if(mouse_b & 1){
+                            row=mouse_y/60;
+                            col=mouse_x/60;
+                            break;
+                        }
+                        auxrow=mouse_y/60;
+                        auxcol=mouse_x/60;
+
+                        b->imprimir(false);
+                        if(mouse_x < 460)draw_sprite(buffer, hover, auxcol*60, auxrow*60);
+                        imprimirAside(auxPrimero, false, pvp);
+                        show_mouse(buffer);
+                        pantalla();
+                    }
+                    pantalla();
+
+                    if(!b->jugarTablero(row+1, col+1, cpuPlayer)) {
+                        //cout << "Movimiento no permitido." << endl;
+                        noPermitido2=true;
+                        continue;
+                    }
+                    noPermitido2=false;
+                    system("cls");
+                }
 			}
 		}
-	//}
 	/*** NO BORRAR, EN CONSTRUCCION ***/
-	/*else { // cpu juega primero
-		while(!b->tableroLleno() && pases<2) {
-			//mover para cpu:
-			if(b->tableroLleno())
-				break;
-			else {
-				cout << "..." << endl;
-				//if(hacerMovimientoSimpleCPU(b, cpuPlayer))
-				//	pases=0;
-				if(hacerMovimientoInteligenteCPU(b, cpuPlayer))
-					pases=0;
-				else
-					pases++;
-				b->imprimir();
-			}
-
-			//comprobar si el jugador pasa:
-			if(!b->tieneMovimientoValido(humanPlayer)) {
-				cout << "Tu debes pasar." << endl;
-				pases++;
-			}
-			else {
-				pases = 0;
-				while (true) {
-					cout << "Fila (1-8): ";
-					cin >> row;
-					cout << "Columna (1-8): ";
-					cin >> col;
-					if(!b->jugarTablero(row, col, humanPlayer)) {
-						cout << "Movimiento no permitido." << endl;
-					}
-					else
-						break;
-				}
-				b->imprimir();
-			}
-		}
-	}*/
-
 	/*int score = b->score();
 	if(score==0)
 		cout << "Tie game." << endl;
@@ -374,6 +389,7 @@ int main(){
     cuadro = load_bitmap("Images/Tablero2.bmp", NULL);
     cursor = load_bitmap("Images/cursor.bmp", NULL);
     hover = load_bitmap("Images/Hover32Bits.bmp", NULL);
+    exitButton = load_bitmap("Images/ExitHover.bmp", NULL);
 
     font1 = load_font("Fonts/lastninja.pcx", NULL, NULL);
     font2 = load_font("Fonts/lastninja12.pcx", NULL, NULL);
@@ -386,10 +402,12 @@ int main(){
 	//cin >> a;
 
 	if (a == 'y' || a == 'Y') {
-        play(-1, true); // valor del cpu = -1
+        play(-1, true, true); //pvp
+        //play(-1, true); // inicia jugador
+        //play(1, false); // inicia IA
 	}
 	else
-		play(1, false);
+		play(1);
 	return 0;
 }
 
